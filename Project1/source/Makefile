@@ -11,4 +11,4 @@ AECalculator.o: AECalculator.cpp
 			g++ -pedantic -Wall -Wextra -O1 -c AECalculator.cpp -o AECalculator ${LDFLAGS}
 
 clean: 
-			rm -f MTUHash
+			rm -f MTUHash AECalculator

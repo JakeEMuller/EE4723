@@ -81,7 +81,7 @@ int main(){
     //get input
 
     //call mtu hash
-
+    print("hello world");
     //output
 
     //exit
