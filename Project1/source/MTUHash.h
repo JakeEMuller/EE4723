@@ -5,11 +5,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
+//#include <iostream>
 #include <stdint.h>
 
 
-using namespace std;
+//using namespace std;
 
 //int expansionTable[8][6];
 

@@ -37,7 +37,7 @@ char** getInputFile(char* fileName, int* NumBlocks){
     rewind(fp);
 
     if((sz % BLOCK_LENGTH) != 0){
-        printf("ERROR: file size is not multiple of 32 (sz % 32 = %d)\n", (sz % 32));
+        printf("ERROR: file size is not multiple of 32 (sz %% 32 = %d)\n", (sz % 32));
     }
 
     // calculate and store num of blocks
@@ -99,10 +99,10 @@ void createOutputFile(char* outputFileName, char* output){
 // --------------------------
 
 char* expansionFunction(char input[32]){
-    char result[48];
+    char* result = malloc(sizeof(char) * 48);
 
     for(int i = 0; i < EXPANSION_TABLE_OUTPUT; i++){
-        char x = expansionTable[i];
+        int x = expansionTable[i];
         result[i] = input[x];
     }
 
@@ -113,7 +113,21 @@ char* expansionFunction(char input[32]){
 // Separate after Expansion Function
 // -----------------------------------
 
+char** spearateAfterExpansion(char input[EXPANSION_TABLE_OUTPUT]){
 
+    char** s_blocks = (char**) malloc(sizeof(char*) * 8);
+    
+ 
+    for(int i = 0; i < 8; i++){
+        s_blocks[i] = (char*) malloc(sizeof(char) * 6);
+        for(int j = 0; j < 6; j++){
+            int index = (i * 6) + j;
+            s_blocks[i][j] = input[index];
+        }
+    }
+
+    return s_blocks;
+}
 
 // --------------------------
 // Substitution Function
@@ -132,11 +146,11 @@ char* substitutionFunction(char input[S_BOX_INPUT]){
     int result_asInt = substitutionTable[i][j]; 
 
     //convert int to array
-    int result_asInt = 0xF & result_asInt;
-    char result[S_BOX_OUTPUT];
+    result_asInt = 0xF & result_asInt;
+    char* result = malloc(sizeof(char) * S_BOX_OUTPUT);
     for(int k = 0; k < S_BOX_OUTPUT; k++){
         int temp = 0x8 & result_asInt;
-        int temp = temp >> 3;
+        temp = temp >> 3;
         result[k] = temp + 0x30;
         result_asInt = result_asInt << 1;
     }
@@ -148,12 +162,37 @@ char* substitutionFunction(char input[S_BOX_INPUT]){
 // Combine after substitution Function
 // ----------------------------------------
 
+char* combineAfterSubstitution(char** input){
+
+    char* result = malloc(sizeof(char) * 32);
+
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 6; j++){
+            int index = (i * 6) + j;
+            result[index] = input[i][j]; 
+        }
+    }
+
+    return result;
+}
+
+
+
 // --------------------------
 // XOR Operation Function
 // --------------------------
 
-char* XOR_Function(char* values[32], int blocks){
+char* XOR_Function(char** values, int blocks){
+    
+    // if only one block return
+    if(blocks = 1){
+        return values[0];
+    }
 
+
+
+
+    return 0;
 }
 
 // --------------------------
@@ -161,7 +200,7 @@ char* XOR_Function(char* values[32], int blocks){
 // --------------------------
 
 char* final_XOR_Function(char* values[32], int blocks){
-
+    return 0;
 }
 
 // --------------------------
@@ -169,7 +208,7 @@ char* final_XOR_Function(char* values[32], int blocks){
 // --------------------------
 
 int* MTUHash(int* bitstream){
-    
+    return 0;
 }
 
 
@@ -182,7 +221,8 @@ int main(){
     //get input
     printf("hello world \n");
     int numBlocks = 0;  
-    char** blocks = getInputFile("Hashin(96 bit).txt", &numBlocks);
+    char* fileName = "Hashin(96 bit).txt";
+    char** blocks = getInputFile(fileName, &numBlocks);
 
 
     printf("Number of blocks: %d \n", numBlocks);
