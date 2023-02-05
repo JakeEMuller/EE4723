@@ -1,7 +1,4 @@
-#define BLOCK_LENGTH 32
-#define EXPANSION_TABLE_OUTPUT 48
-#define S_BOX_INPUT 6
-#define S_BOX_OUTPUT 4
+
 
 #include "MTUHash.h"
 
@@ -101,24 +98,61 @@ void createOutputFile(char* outputFileName, char* output){
 // Expansion Function
 // --------------------------
 
-int* expansionFunction(int input[48]){
+char* expansionFunction(char input[32]){
+    char result[48];
 
+    for(int i = 0; i < EXPANSION_TABLE_OUTPUT; i++){
+        char x = expansionTable[i];
+        result[i] = input[x];
+    }
+
+    return result;
 }
+
+// -----------------------------------
+// Separate after Expansion Function
+// -----------------------------------
+
+
 
 // --------------------------
 // Substitution Function
 // --------------------------
 
-int* substitutionFunction(int input[S_BOX_INPUT]){
+char* substitutionFunction(char input[S_BOX_INPUT]){
+    
+    //calculate i
+    int i = 2 * (input[0] - 0x30) + (input[5] - 0x30);
+    //calculate j
+    int j = input[1] - 0x30;
+    j = (j << 1) | (input[2] - 0x30);
+    j = (j << 1) | (input[3] - 0x30);
+    j = (j << 1) | (input[4] - 0x30);
 
+    int result_asInt = substitutionTable[i][j]; 
+
+    //convert int to array
+    int result_asInt = 0xF & result_asInt;
+    char result[S_BOX_OUTPUT];
+    for(int k = 0; k < S_BOX_OUTPUT; k++){
+        int temp = 0x8 & result_asInt;
+        int temp = temp >> 3;
+        result[k] = temp + 0x30;
+        result_asInt = result_asInt << 1;
+    }
+
+    return result;
 }
 
+// ----------------------------------------
+// Combine after substitution Function
+// ----------------------------------------
 
 // --------------------------
 // XOR Operation Function
 // --------------------------
 
-int* XOR_Function(int* values[32], int blocks){
+char* XOR_Function(char* values[32], int blocks){
 
 }
 
@@ -126,7 +160,7 @@ int* XOR_Function(int* values[32], int blocks){
 // Final XOR
 // --------------------------
 
-int* final_XOR_Function(int* values[32], int blocks){
+char* final_XOR_Function(char* values[32], int blocks){
 
 }
 

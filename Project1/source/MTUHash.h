@@ -1,3 +1,8 @@
+#define BLOCK_LENGTH 32
+#define EXPANSION_TABLE_OUTPUT 48
+#define S_BOX_INPUT 6
+#define S_BOX_OUTPUT 4
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -14,13 +19,13 @@ char** getInputFile(char* fileName, int* NumBlocks);
 
 
 
-int* expansionFunction(int input[48]);
+char* expansionFunction(char input[48]);
 
-int* substitutionFunction(int input[6]);
+char* substitutionFunction(char input[S_BOX_INPUT]);
 
-int* XOR_Function(int* values[32], int blocks);
+char* XOR_Function(char* values[32], int blocks);
 
-int* final_XOR_Function(int* values[32], int blocks);
+char* final_XOR_Function(char* values[32], int blocks);
 
 int* MTUHash(int* bitstream);
 
