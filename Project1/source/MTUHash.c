@@ -195,7 +195,14 @@ char** XOR_Function(char** values, int blocks){
         for(int j = 0; j < blocks; j++){
             if( i != j ){
                 for(int k = 0; k < 32; k++){
-                    result[i][k] = result[i][k] ^ (values[j][k]);
+                    // Do xor
+                    //result[i][k] = result[i][k] ^ (values[j][k]);
+                    if(result[i][k] == values[i][k]){
+                        result[i][k] = '0';
+                    } else {
+                        result[i][k] = '1';
+                    }
+                    
                 }
             }
             
@@ -220,7 +227,14 @@ char* final_XOR_Function(char** values, int blocks){
 
     for(int i = 0; i < blocks; i++){
         for(int j = 0; j < 32; j++){
-            result[j] = result[j] ^ values[i][j];
+            // do xor
+            //result[j] = result[j] ^ values[i][j];
+            if(result[j] == values[i][j]){
+                result[j] = '0';
+            } else {
+                result[j] = '1';
+            }
+            
         }
     }
 
@@ -258,9 +272,11 @@ char* MTUHash(char** blocks, int numBlocks){
             //printf("after combine \n");
             free(sBlocks);
         }
-
+        printf("Before XOR \n");
+        printBlocks(blocks, numBlocks);
         blocks = XOR_Function(blocks, numBlocks);
-
+        printf("After XOR \n");
+        printBlocks(blocks, numBlocks);
 
     }
 
@@ -280,19 +296,27 @@ int main(){
     //get input
     //printf("hello world \n");
     int numBlocks = 0;  
-    char* fileName = "Hashin(32 bit).txt";
+    char* fileName = "Hashin(96 bit).txt";
     char** blocks = getInputFile(fileName, &numBlocks);
 
-    //char* result = MTUHash(blocks, numBlocks);
-    //free(blocks);
+    printf("Number of blocks: %d \n", numBlocks);
+    printBlocks(blocks, numBlocks);
 
-    //printf("Number of blocks: %d \n", numBlocks);
-    //printBlocks(blocks, numBlocks);
+    char* result = MTUHash(blocks, numBlocks);
+    free(blocks);
+
+
+    printf("result: ");
+    for(int i = 0; i < 32; i++){
+        printf("%c", result[i]);
+    }
+    printf("\n");
+
     //test_Sub();    
     //test_expansion();
     //test_separate();
-    test_ES_operation();
-    //createOutputFile("Hashout_TEST1.txt", result);
+    //test_ES_operation();
+    createOutputFile("Hashout_TEST1.txt", result);
 
     //exit
     return 0;
