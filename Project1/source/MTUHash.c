@@ -180,7 +180,7 @@ char* combineAfterSubstitution(char** input){
 // --------------------------
 // XOR Operation Function
 // --------------------------
-
+/// TODO: THIS IS JUST WRONG
 char** XOR_Function(char** values, int blocks){
     
     // if only one block return
@@ -191,7 +191,7 @@ char** XOR_Function(char** values, int blocks){
     char** result = (char**) calloc(blocks, sizeof(char*));
 
     for(int i = 0; i < blocks; i++){
-        result[i] = calloc(32, sizeof(char*));
+        result[i] = calloc(32, sizeof(char));
         for(int j = 0; j < blocks; j++){
             if( i != j ){
                 for(int k = 0; k < 32; k++){
@@ -216,7 +216,7 @@ char** XOR_Function(char** values, int blocks){
 // --------------------------
 // Final XOR
 // --------------------------
-
+/// TODO: THIS IS JUST WRONG
 char* final_XOR_Function(char** values, int blocks){
 
     if( blocks == 1 ){
@@ -324,8 +324,9 @@ int main(){
 }
 
 
-
+// ----------------------
 // debug functions
+// ----------------------
 
 void printBlocks(char** blocks, int numBlocks){
     
