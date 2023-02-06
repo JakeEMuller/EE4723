@@ -23,11 +23,11 @@ char* expansionFunction(char input[48]);
 
 char* substitutionFunction(char input[S_BOX_INPUT]);
 
-char* XOR_Function(char* values[32], int blocks);
+char** XOR_Function(char** values, int blocks);
 
-char* final_XOR_Function(char* values[32], int blocks);
+char* final_XOR_Function(char** values, int blocks);
 
-int* MTUHash(int* bitstream);
+char* MTUHash(char* bitstream);
 
 // debug functions
 

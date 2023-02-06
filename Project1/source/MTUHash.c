@@ -182,32 +182,57 @@ char* combineAfterSubstitution(char** input){
 // XOR Operation Function
 // --------------------------
 
-char* XOR_Function(char** values, int blocks){
+char** XOR_Function(char** values, int blocks){
     
     // if only one block return
-    if(blocks = 1){
+    if(blocks == 1){
         return values[0];
     }
 
+    char** result = (char**) calloc(blocks, sizeof(char*));
+
+    for(int i = 0; i < blocks; i++){
+        result[i] = calloc(32, sizeof(char*));
+        for(int j = 0; j < blocks; j++){
+            if( i != j ){
+                for(int k = 0; k < 32; k++){
+                    result[i][k] = result[i][k] ^ (values[j][k]);
+                }
+            }
+            
+        }
+    }
 
 
-
-    return 0;
+    return result;
 }
 
 // --------------------------
 // Final XOR
 // --------------------------
 
-char* final_XOR_Function(char* values[32], int blocks){
-    return 0;
+char* final_XOR_Function(char** values, int blocks){
+
+    if( blocks == 1 ){
+        return values[0];
+    }
+
+    char* result =  calloc(32, sizeof(char));
+
+    for(int i = 0; i < blocks; i++){
+        for(int j = 0; j < 32; j++){
+            result[j] = result[j] ^ values[i][j];
+        }
+    }
+
+    return result;
 }
 
 // --------------------------
 // MTUHash Function
 // --------------------------
 
-int* MTUHash(int* bitstream){
+char* MTUHash(char* bitstream){
     return 0;
 }
 
