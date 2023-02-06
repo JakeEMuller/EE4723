@@ -1,5 +1,3 @@
-
-
 #include "MTUHash.h"
 
 // --------------------------
@@ -98,11 +96,11 @@ void createOutputFile(char* outputFileName, char* output){
 // Expansion Function
 // --------------------------
 
-char* expansionFunction(char input[32]){
+char* expansionFunction(char* input){
     char* result = malloc(sizeof(char) * 48);
 
     for(int i = 0; i < EXPANSION_TABLE_OUTPUT; i++){
-        int x = expansionTable[i];
+        int x = expansionTable[i] - 1;
         result[i] = input[x];
     }
 
@@ -113,8 +111,7 @@ char* expansionFunction(char input[32]){
 // Separate after Expansion Function
 // -----------------------------------
 
-char** spearateAfterExpansion(char input[EXPANSION_TABLE_OUTPUT]){
-
+char** separateAfterExpansion(char input[EXPANSION_TABLE_OUTPUT]){
     char** s_blocks = (char**) malloc(sizeof(char*) * 8);
     
  
@@ -143,6 +140,8 @@ char* substitutionFunction(char input[S_BOX_INPUT]){
     j = (j << 1) | (input[3] - 0x30);
     j = (j << 1) | (input[4] - 0x30);
 
+    //printf("I: %d J: %d \n", i, j);
+
     int result_asInt = substitutionTable[i][j]; 
 
     //convert int to array
@@ -167,8 +166,8 @@ char* combineAfterSubstitution(char** input){
     char* result = malloc(sizeof(char) * 32);
 
     for(int i = 0; i < 8; i++){
-        for(int j = 0; j < 6; j++){
-            int index = (i * 6) + j;
+        for(int j = 0; j < 4; j++){
+            int index = (i * 4) + j;
             result[index] = input[i][j]; 
         }
     }
@@ -186,7 +185,7 @@ char** XOR_Function(char** values, int blocks){
     
     // if only one block return
     if(blocks == 1){
-        return values[0];
+        return values;
     }
 
     char** result = (char**) calloc(blocks, sizeof(char*));
@@ -232,8 +231,43 @@ char* final_XOR_Function(char** values, int blocks){
 // MTUHash Function
 // --------------------------
 
-char* MTUHash(char* bitstream){
-    return 0;
+char* MTUHash(char** blocks, int numBlocks){
+
+    for(int rounds = 0; rounds < 16; rounds++){
+        //printf("round %d \n", rounds);
+        //do E-S on all blocks
+        for(int i = 0; i < numBlocks; i++){
+            //printf("Block %d \n", i);
+
+            char* expanded = expansionFunction(blocks[i]);
+            //printf("after expand \n");
+
+            char** sBlocks = separateAfterExpansion(expanded);
+            free(expanded);
+            //printf("after seperation \n");
+
+
+            //go through all S blocks and run substitution 
+            for(int j = 0; j < 8; j++){
+                //printf("subblock %d \n", j);
+                sBlocks[j] = substitutionFunction(sBlocks[j]);
+            }
+            //printf("after substitutions \n");
+
+            blocks[i] = combineAfterSubstitution(sBlocks);
+            //printf("after combine \n");
+            free(sBlocks);
+        }
+
+        blocks = XOR_Function(blocks, numBlocks);
+
+
+    }
+
+    char* result = final_XOR_Function(blocks, numBlocks);
+    
+
+    return result;
 }
 
 
@@ -244,16 +278,21 @@ char* MTUHash(char* bitstream){
 int main(){
 
     //get input
-    printf("hello world \n");
+    //printf("hello world \n");
     int numBlocks = 0;  
-    char* fileName = "Hashin(96 bit).txt";
+    char* fileName = "Hashin(32 bit).txt";
     char** blocks = getInputFile(fileName, &numBlocks);
 
+    //char* result = MTUHash(blocks, numBlocks);
+    //free(blocks);
 
-    printf("Number of blocks: %d \n", numBlocks);
-    printBlocks(blocks, numBlocks);
-    
-    createOutputFile("Hashout_TEST1.txt", blocks[0]);
+    //printf("Number of blocks: %d \n", numBlocks);
+    //printBlocks(blocks, numBlocks);
+    //test_Sub();    
+    //test_expansion();
+    //test_separate();
+    test_ES_operation();
+    //createOutputFile("Hashout_TEST1.txt", result);
 
     //exit
     return 0;
@@ -273,4 +312,93 @@ void printBlocks(char** blocks, int numBlocks){
         }
         printf("\n");
     }       
+}
+
+
+
+
+
+void test_expansion(){
+    char input[32] = "10000100001000010000100001000011";
+
+    char* result = expansionFunction(input);
+     printf("Expanstion expected: 110000001000000100000010100001010000001000000111\n");
+    printf("Actual: ");
+    for(int i = 0; i < 48; i++){
+        printf("%c", result[i]);
+    }
+    printf("\n");
+
+}
+
+void test_separate(){
+    char input[48] = "110000001000000100000010100001010000001000000111";
+    printf("110000 001000 000100 000010 100001 010000 001000 000111\n");
+    char** s_blocks = separateAfterExpansion(input);
+
+    for(int i = 0; i < 8; i++){
+        printf("Block 1: ");
+        for(int j = 0; j < 6; j++){
+            printf("%c", s_blocks[i][j]);
+        }
+        printf("\n");
+    }
+
+}
+
+
+void test_Sub(){
+    
+    char input[6] = {'1','0','1','0','1','0'};
+
+    char* result = substitutionFunction(input);
+
+    printf("Substitution expected: 0110\n");
+    printf("Actual: ");
+    for(int i = 0; i < 4; i++){
+        printf("%c", result[i]);
+    }
+    printf("\n");
+
+}
+
+
+void test_ES_operation(){
+    char input[48] = "110000001000000100000010100001010000001000000111";
+    printf("110000 001000 000100 000010 100001 010000 001000 000111\n");
+    
+    printf("Spliting\n");
+    char** s_blocks = separateAfterExpansion(input);
+
+    for(int i = 0; i < 8; i++){
+        printf("Block 1: ");
+        for(int j = 0; j < 6; j++){
+            printf("%c", s_blocks[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("Substitution\n");
+    for(int j = 0; j < 8; j++){
+        //printf("subblock %d \n", j);
+        s_blocks[j] = substitutionFunction(s_blocks[j]);
+    }
+
+    for(int i = 0; i < 8; i++){
+        printf("sBlock 1: ");
+        for(int j = 0; j < 4; j++){
+            printf("%c", s_blocks[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("Combine\n");
+    char* combined = combineAfterSubstitution(s_blocks);
+    printf("Expected: 11110010110101001111001100100100\n");
+    printf("Actual:   ");
+    for(int i = 0; i < 32; i++){
+        printf("%c", combined[i]);
+    }
+    printf("\n");
+
 }

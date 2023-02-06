@@ -19,7 +19,7 @@ char** getInputFile(char* fileName, int* NumBlocks);
 
 
 
-char* expansionFunction(char input[48]);
+char* expansionFunction(char* input);
 
 char* substitutionFunction(char input[S_BOX_INPUT]);
 
@@ -27,8 +27,16 @@ char** XOR_Function(char** values, int blocks);
 
 char* final_XOR_Function(char** values, int blocks);
 
-char* MTUHash(char* bitstream);
+char* MTUHash(char** blocks, int numBlocks);
 
 // debug functions
 
 void printBlocks(char** blocks, int numBlocks);
+
+void test_Sub();
+
+void test_expansion();
+
+void test_separate();
+
+void test_ES_operation();
