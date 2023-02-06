@@ -1,4 +1,4 @@
-//Joan
+
 #define BLOCK_MULTIPLE 32
 #define EXPANSION_TABLE_OUTPUT 48
 #define S_BOX_INPUT 6
