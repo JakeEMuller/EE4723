@@ -188,6 +188,7 @@ char* combineAfterSubstitution(char** input){
 char* ES_Operation(char* block){
 
     char* expanded = expansionFunction(block);
+    free(block);
     //printf("after expand \n");
 
     char** sBlocks = separateAfterExpansion(expanded);
@@ -196,17 +197,24 @@ char* ES_Operation(char* block){
 
 
     //go through all S blocks and run substitution 
+    char** cBlocks = (char**) malloc(sizeof(char*) * 8);
     for(int j = 0; j < 8; j++){
+        
         //printf("subblock %d \n", j);
-        sBlocks[j] = substitutionFunction(sBlocks[j]);
+        cBlocks[j] = substitutionFunction(sBlocks[j]);
+        free(sBlocks[j]);
     }
     //printf("after substitutions \n");
 
-    block = combineAfterSubstitution(sBlocks);
+    char* result = combineAfterSubstitution(cBlocks);
     //printf("after combine \n");
+    for(int i = 0; i < 8; i++){
+        free(cBlocks[i]);
+    }
+    free(cBlocks);
     free(sBlocks);
     
-    return block;
+    return result;
 }
 
 // -------------------
@@ -249,6 +257,12 @@ char** XOR_Function(char** values, int blocks){
             
         }
     }
+
+    //free
+    //for(int i = 0; i < blocks; i++){
+    //    free(values[i]);
+    //}
+    //free(values);
 
 
     return result;
@@ -333,30 +347,34 @@ int main(){
     //printf("hello world \n");
     int numBlocks = 0;  
     char* fileName = "Hashin(32 bit).txt";
-    char** blocks = getInputFile(fileName, &numBlocks);
+    //char** blocks = getInputFile(fileName, &numBlocks);
 
-    printf("Number of blocks: %d \n", numBlocks);
-    printBlocks(blocks, numBlocks);
+    //printf("Number of blocks: %d \n", numBlocks);
+    //printBlocks(blocks, numBlocks);
 
-    char* result = MTUHash(blocks, numBlocks);
-    free(blocks);
+    //char* result = MTUHash(blocks, numBlocks);
+    
 
 
-    printf("result: ");
-    for(int i = 0; i < 32; i++){
-        printf("%c", result[i]);
-    }
-    printf("\n");
+   // printf("result: ");
+    //for(int i = 0; i < 32; i++){
+    //    printf("%c", result[i]);
+    //}
+    //printf("\n");
 
     //test_Sub();    
     //test_expansion();
     //test_separate();
     //test_ES_operation();
     //test_ES_operation_function();
-    createOutputFile("Hashout_TEST1.txt", result);
-    free(result);
+    //createOutputFile("Hashout_TEST1.txt", result);
 
-    //AECalculator();
+    //for(int i = 0; i < numBlocks; i++){
+    //    free(blocks[i]);
+    //}
+    //free(blocks);
+
+    AECalculator();
 
     //exit
     return 0;

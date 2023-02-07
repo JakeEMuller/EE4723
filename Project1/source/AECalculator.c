@@ -4,6 +4,9 @@
 double compareOutputs(char* baseLineResult, char* result){
     int count = 0;
     for(int i = 0; i < 32; i++){
+        //printf("base: %c\n", baseLineResult[i]);
+        //printf("new: %c\n", result[i]);
+        
         if(baseLineResult[i] != result[i]){
             count++;
         }
@@ -22,21 +25,28 @@ void AECalculator(){
     char* fileName = "Hashin(32 bit).txt";
     char* fileOut = "ARF.txt";
     FILE* fp; 
-    printf("Before File open");
+
+    printf("Before File open\n");
     fp = fopen(fileOut, "w+");
 
     int numBlocks = 0;
 
-    printf("Before Input");
+    printf("Before Input\n");
     char** blocks = getInputFile(fileName, &numBlocks);
-    printf("After Input");
+    printf("After Input\n");
     
     char* baseLineResult = MTUHash(blocks, numBlocks);
+    printf("BaseLine Hash: ");
+    for(int i = 0; i < 32; i++) {
+        printf("%c", baseLineResult[i]);
+    }
+    printf("\n");
+
     double average = 0;
 
     for(int i = 0; i < numBlocks; i++){
         for(int j = 0; j < 32; j++){
-            printf("Bit [%d] [%d]", i, j);
+            printf("Bit [%d] [%d]\n", i, j);
             //flip bit
             char holder = blocks[i][j];
             if(blocks[i][j] == '0'){
@@ -46,7 +56,13 @@ void AECalculator(){
             }
 
             //run MTUHash
-            char* result = MTUHash(blocks, numBlocks);
+            char* result = MTUHash(blocks, numBlocks); //blocks are getting super fucked up
+            
+            printf("AE Hash: ");
+            for(int i = 0; i < 32; i++) {
+                printf("%c", result[i]);
+            }
+            printf("\n");
 
             //compare outputs
             double percent = compareOutputs(baseLineResult, result);
