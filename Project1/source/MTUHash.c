@@ -1,4 +1,5 @@
 #include "MTUHash.h"
+#include "AECalculator.h"
 
 // --------------------------
 // Expansion table
@@ -35,7 +36,8 @@ char** getInputFile(char* fileName, int* NumBlocks){
     rewind(fp);
 
     if((sz % BLOCK_LENGTH) != 0){
-        printf("ERROR: file size is not multiple of 32 (sz %% 32 = %d)\n", (sz % 32));
+        printf("Warning: file size is not multiple of 32 (sz %% 32 = %d).\n", (sz % 32));
+        printf(" -- Likely line character at end of file\n");
     }
 
     // calculate and store num of blocks
@@ -58,11 +60,15 @@ char** getInputFile(char* fileName, int* NumBlocks){
             if (character == EOF){
 
                 printf("ERROR: EOF Reached at Unexpected Time \n");
+                printf("Exiting...\n");
+                exit(1);
                 return 0;
             // check if not 0 or 1
             }else if(character != '0' && character != '1' ){
                 
                 printf("ERROR: Non 0 or 1 character detected\n");
+                printf("Exiting...\n");
+                exit(1);
                 return 0;
             }
 
@@ -176,6 +182,37 @@ char* combineAfterSubstitution(char** input){
 }
 
 
+// ---------------------
+// ES Operation
+// ---------------------
+char* ES_Operation(char* block){
+
+    char* expanded = expansionFunction(block);
+    //printf("after expand \n");
+
+    char** sBlocks = separateAfterExpansion(expanded);
+    free(expanded);
+    //printf("after seperation \n");
+
+
+    //go through all S blocks and run substitution 
+    for(int j = 0; j < 8; j++){
+        //printf("subblock %d \n", j);
+        sBlocks[j] = substitutionFunction(sBlocks[j]);
+    }
+    //printf("after substitutions \n");
+
+    block = combineAfterSubstitution(sBlocks);
+    //printf("after combine \n");
+    free(sBlocks);
+    
+    return block;
+}
+
+// -------------------
+// Character XOR
+// -------------------
+
 
 // --------------------------
 // XOR Operation Function
@@ -188,16 +225,20 @@ char** XOR_Function(char** values, int blocks){
         return values;
     }
 
-    char** result = (char**) calloc(blocks, sizeof(char*));
+    char** result = (char**) malloc(sizeof(char*) * blocks);
 
     for(int i = 0; i < blocks; i++){
-        result[i] = calloc(32, sizeof(char));
+        result[i] = malloc(sizeof(char) * 33);
+        for(int fill = 0; fill < 32; fill++){
+            result[i][fill] = '0';
+        }
+
         for(int j = 0; j < blocks; j++){
             if( i != j ){
                 for(int k = 0; k < 32; k++){
                     // Do xor
                     //result[i][k] = result[i][k] ^ (values[j][k]);
-                    if(result[i][k] == values[i][k]){
+                    if(result[i][k] == values[j][k]){
                         result[i][k] = '0';
                     } else {
                         result[i][k] = '1';
@@ -223,7 +264,11 @@ char* final_XOR_Function(char** values, int blocks){
         return values[0];
     }
 
-    char* result =  calloc(32, sizeof(char));
+    char* result =  malloc(sizeof(char) * 32);
+    for(int i = 0; i < 32; i++){
+        result[i] = '0';
+    }
+
 
     for(int i = 0; i < blocks; i++){
         for(int j = 0; j < 32; j++){
@@ -247,45 +292,36 @@ char* final_XOR_Function(char** values, int blocks){
 
 char* MTUHash(char** blocks, int numBlocks){
 
-    for(int rounds = 0; rounds < 16; rounds++){
+
+    //do 16 rounds
+    for(int rounds = 0; rounds < 15; rounds++){
         //printf("round %d \n", rounds);
         //do E-S on all blocks
         for(int i = 0; i < numBlocks; i++){
             //printf("Block %d \n", i);
-
-            char* expanded = expansionFunction(blocks[i]);
-            //printf("after expand \n");
-
-            char** sBlocks = separateAfterExpansion(expanded);
-            free(expanded);
-            //printf("after seperation \n");
-
-
-            //go through all S blocks and run substitution 
-            for(int j = 0; j < 8; j++){
-                //printf("subblock %d \n", j);
-                sBlocks[j] = substitutionFunction(sBlocks[j]);
-            }
-            //printf("after substitutions \n");
-
-            blocks[i] = combineAfterSubstitution(sBlocks);
-            //printf("after combine \n");
-            free(sBlocks);
+            blocks[i] = ES_Operation(blocks[i]);
+            
         }
-        printf("Before XOR \n");
-        printBlocks(blocks, numBlocks);
+        //printf("Before XOR \n");
+        //printBlocks(blocks, numBlocks);
         blocks = XOR_Function(blocks, numBlocks);
-        printf("After XOR \n");
-        printBlocks(blocks, numBlocks);
+        //printf("After XOR \n");
+        //printBlocks(blocks, numBlocks);
 
     }
 
-    char* result = final_XOR_Function(blocks, numBlocks);
-    
+    //final round
+    for(int i = 0; i < numBlocks; i++){
+        blocks[i] = ES_Operation(blocks[i]);
+    }
 
+    //printf("Before Final XOR \n");
+    //printBlocks(blocks, numBlocks);
+    char* result = final_XOR_Function(blocks, numBlocks);
+    //printf("After Final XOR \n");
+    //printBlocks(&result, 1);
     return result;
 }
-
 
 
 // --------------------------
@@ -296,7 +332,7 @@ int main(){
     //get input
     //printf("hello world \n");
     int numBlocks = 0;  
-    char* fileName = "Hashin(96 bit).txt";
+    char* fileName = "Hashin(32 bit).txt";
     char** blocks = getInputFile(fileName, &numBlocks);
 
     printf("Number of blocks: %d \n", numBlocks);
@@ -316,7 +352,11 @@ int main(){
     //test_expansion();
     //test_separate();
     //test_ES_operation();
+    //test_ES_operation_function();
     createOutputFile("Hashout_TEST1.txt", result);
+    free(result);
+
+    //AECalculator();
 
     //exit
     return 0;
@@ -426,4 +466,18 @@ void test_ES_operation(){
     }
     printf("\n");
 
+}
+
+
+void test_ES_operation_function(){
+    char input[48] = "10000100001000010000100001000011";
+
+    char* result = ES_Operation(input);
+
+    printf("Expected: 11110010110101001111001100100100\n");
+    printf("Actual:   ");
+    for(int i = 0; i < 32; i++){
+        printf("%c", result[i]);
+    }
+    printf("\n");
 }

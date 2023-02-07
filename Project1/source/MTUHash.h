@@ -17,8 +17,6 @@
 
 char** getInputFile(char* fileName, int* NumBlocks);
 
-
-
 char* expansionFunction(char* input);
 
 char* substitutionFunction(char input[S_BOX_INPUT]);
@@ -40,3 +38,5 @@ void test_expansion();
 void test_separate();
 
 void test_ES_operation();
+
+void test_ES_operation_function();

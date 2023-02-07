@@ -2,12 +2,12 @@ CC = gcc
 CFLAGS = -pedantic -Wall -Wextra -O1
 LDFLAGS = -lm
 
-default: clean MTUHash.o AECalculator.o
+default: clean MTUHash.o 
 
 MTUHash.o: MTUHash.c MTUHash.h
-			gcc -pedantic -Wall -Wextra -O1 MTUHash.c -o MTUHash ${LDFLAGS}
+			gcc -pedantic -Wall -Wextra -O1 MTUHash.c AECalculator.c -o MTUHash ${LDFLAGS}
 
-AECalculator.o: AECalculator.c
+AECalculator.o: AECalculator.c AECalculator.h MTUHash.h
 			gcc -pedantic -Wall -Wextra -O1 AECalculator.c -o AECalculator ${LDFLAGS}
 
 clean: 
