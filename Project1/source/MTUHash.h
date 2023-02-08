@@ -8,24 +8,25 @@
 //#include <iostream>
 #include <stdint.h>
 
-
-//using namespace std;
-
-//int expansionTable[8][6];
-
-//int substitutionTable[4][16];
-
 char** getInputFile(char* fileName, int* NumBlocks);
 
-char* expansionFunction(char* input);
+void createOutputFile(char* outputFileName, char* output);
 
-char* substitutionFunction(char input[S_BOX_INPUT]);
+void expansionFunction(char* input, char* result);
 
-char** XOR_Function(char** values, int blocks);
+void separateAfterExpansion(char* input, char** s_blocks);
 
-char* final_XOR_Function(char** values, int blocks);
+void substitutionFunction(char* input, char* result);
 
-char* MTUHash(char** blocks, int numBlocks);
+void combineAfterSubstitution(char** input, char* result);
+
+void ES_Operation(char* block, char* result);
+
+void XOR_Function(char** values, int numBlocks, char** result);
+
+void final_XOR_Function(char** values, int numBlocks, char* result);
+
+void MTUHash(char** blocks, int numBlocks, char* result);
 
 // debug functions
 
@@ -36,7 +37,5 @@ void test_Sub();
 void test_expansion();
 
 void test_separate();
-
-void test_ES_operation();
 
 void test_ES_operation_function();

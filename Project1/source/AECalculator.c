@@ -8,11 +8,12 @@ double compareOutputs(char* baseLineResult, char* result){
         //printf("new: %c\n", result[i]);
         
         if(baseLineResult[i] != result[i]){
+
             count++;
         }
     }
 
-    double percent = (count / 32) * 100;
+    double percent = ((double)(count *100)) / 32.0;
     return percent;
 
 }
@@ -20,34 +21,33 @@ double compareOutputs(char* baseLineResult, char* result){
 
 void AECalculator(){
 
-    printf("Start AE Cacl\n");
+    //printf("Start AE Cacl\n");
 
     char* fileName = "Hashin(32 bit).txt";
     char* fileOut = "ARF.txt";
     FILE* fp; 
 
-    printf("Before File open\n");
+    //printf("Before File open\n");
     fp = fopen(fileOut, "w+");
 
     int numBlocks = 0;
 
-    printf("Before Input\n");
+    //printf("Before Input\n");
     char** blocks = getInputFile(fileName, &numBlocks);
-    printf("After Input\n");
+    //printf("After Input\n");
     
-    char* baseLineResult = MTUHash(blocks, numBlocks);
-    printf("BaseLine Hash: ");
-    for(int i = 0; i < 32; i++) {
-        printf("%c", baseLineResult[i]);
-    }
-    printf("\n");
+    char* baseLineResult = malloc(sizeof(char) * 32);
+    MTUHash(blocks, numBlocks, baseLineResult);
 
     double average = 0;
 
     for(int i = 0; i < numBlocks; i++){
         for(int j = 0; j < 32; j++){
-            printf("Bit [%d] [%d]\n", i, j);
+            //printf("Bit [%d] [%d]\n", i, j);
             //flip bit
+
+
+
             char holder = blocks[i][j];
             if(blocks[i][j] == '0'){
                 blocks[i][j] = '1';
@@ -56,9 +56,16 @@ void AECalculator(){
             }
 
             //run MTUHash
-            char* result = MTUHash(blocks, numBlocks); //blocks are getting super fucked up
+            char* result = malloc(sizeof(char) * 32);
+            MTUHash(blocks, numBlocks, result); //blocks are getting super fucked up
             
-            printf("AE Hash: ");
+            printf("BaseLine Hash: ");
+            for(int i = 0; i < 32; i++) {
+                printf("%c", baseLineResult[i]);
+            }
+            printf("\n"); 
+
+            printf("AE Hash:       ");
             for(int i = 0; i < 32; i++) {
                 printf("%c", result[i]);
             }
@@ -66,7 +73,8 @@ void AECalculator(){
 
             //compare outputs
             double percent = compareOutputs(baseLineResult, result);
-            fprintf(fp,"%.1f \n", percent);
+            
+            fprintf(fp,"%.1f %%\n", percent);
 
 
             average = average + percent;
@@ -80,8 +88,12 @@ void AECalculator(){
     }
 
     average = average / (numBlocks * 32);
-    fprintf(fp, "Average AFT: %.1f\n", average);
+    fprintf(fp, "Average AFT: %.1f %%\n", average);
 
+
+    for(int i = 0; i < numBlocks; i++){
+        free(blocks[i]);
+    }
     free(blocks);
     free(baseLineResult);
     fclose(fp);

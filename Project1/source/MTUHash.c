@@ -1,6 +1,8 @@
 #include "MTUHash.h"
 #include "AECalculator.h"
 
+int debug = 0;
+
 // --------------------------
 // Expansion table
 // --------------------------
@@ -20,6 +22,7 @@ int substitutionTable[4][16] = {{ 14,  4, 13,  1,  2, 15, 11,  8,  3, 10,  6, 12
                                 {  0, 15,  7,  4, 14,  2, 13,  1, 10,  6, 12, 11,  9,  5,  3,  8},
                                 {  4,  1, 14,  8, 13,  6,  2, 11, 15, 12,  9,  7,  3, 10,  5,  0},
                                 { 15, 12,  8,  2,  4,  9,  1,  7,  5, 11,  3, 14, 10,  0,  6, 13}};
+
 
 
 // -----------------------------
@@ -83,7 +86,6 @@ char** getInputFile(char* fileName, int* NumBlocks){
 
 }
 
-
 // -----------------------------
 // File Output 
 // -----------------------------
@@ -99,44 +101,52 @@ void createOutputFile(char* outputFileName, char* output){
 }
 
 // --------------------------
-// Expansion Function
+// Expansion Function: 
+// Input: 32 Bit Block
+// Output: 48 Bit Block
 // --------------------------
 
-char* expansionFunction(char* input){
-    char* result = malloc(sizeof(char) * 48);
+void expansionFunction(char* input, char* result){
+    //char* result = malloc(sizeof(char) * 48);
 
     for(int i = 0; i < EXPANSION_TABLE_OUTPUT; i++){
         int x = expansionTable[i] - 1;
         result[i] = input[x];
     }
 
-    return result;
+    //return result;
 }
 
 // -----------------------------------
 // Separate after Expansion Function
+// Input: 48 Bit block
+// Output: Array of bits 8 * 6 bits
 // -----------------------------------
 
-char** separateAfterExpansion(char input[EXPANSION_TABLE_OUTPUT]){
-    char** s_blocks = (char**) malloc(sizeof(char*) * 8);
+void separateAfterExpansion(char* input, char** s_blocks){
+    //char** s_blocks = (char**) malloc(sizeof(char*) * 8);
     
  
     for(int i = 0; i < 8; i++){
-        s_blocks[i] = (char*) malloc(sizeof(char) * 6);
+        //s_blocks[i] = (char*) malloc(sizeof(char) * 6);
         for(int j = 0; j < 6; j++){
             int index = (i * 6) + j;
             s_blocks[i][j] = input[index];
         }
     }
 
-    return s_blocks;
+    //return s_blocks;
 }
+
+
 
 // --------------------------
 // Substitution Function
+// Inputs: 6 bits
+// Output: 4 bits
 // --------------------------
 
-char* substitutionFunction(char input[S_BOX_INPUT]){
+void substitutionFunction(char* input, char* result){
     
     //calculate i
     int i = 2 * (input[0] - 0x30) + (input[5] - 0x30);
@@ -152,7 +162,7 @@ char* substitutionFunction(char input[S_BOX_INPUT]){
 
     //convert int to array
     result_asInt = 0xF & result_asInt;
-    char* result = malloc(sizeof(char) * S_BOX_OUTPUT);
+    //char* result = malloc(sizeof(char) * S_BOX_OUTPUT);
     for(int k = 0; k < S_BOX_OUTPUT; k++){
         int temp = 0x8 & result_asInt;
         temp = temp >> 3;
@@ -160,16 +170,18 @@ char* substitutionFunction(char input[S_BOX_INPUT]){
         result_asInt = result_asInt << 1;
     }
 
-    return result;
+    //return result;
 }
 
 // ----------------------------------------
 // Combine after substitution Function
+// Inputs: 8 * 4 bits matrix
+// Output: 32 Bit
 // ----------------------------------------
 
-char* combineAfterSubstitution(char** input){
+void combineAfterSubstitution(char** input, char* result){
 
-    char* result = malloc(sizeof(char) * 32);
+    //char* result = malloc(sizeof(char) * 32);
 
     for(int i = 0; i < 8; i++){
         for(int j = 0; j < 4; j++){
@@ -178,106 +190,114 @@ char* combineAfterSubstitution(char** input){
         }
     }
 
-    return result;
+    //return result;
 }
 
 
 // ---------------------
 // ES Operation
+// Inputs: 32 Bit block
+// Output: 32 Bit E-S Block  
 // ---------------------
-char* ES_Operation(char* block){
 
-    char* expanded = expansionFunction(block);
-    free(block);
-    //printf("after expand \n");
+void ES_Operation(char* block, char* result){
+    
+    char* expanded = malloc(sizeof(char) * 48);
+    expansionFunction(block, expanded);
+    
+    // allocate memory
+    char** sBlocks = (char**) malloc(sizeof(char*) * 8);
+    for(int i = 0; i < 8; i++){
+        sBlocks[i] = (char*) malloc(sizeof(char) * 6);
+    }
 
-    char** sBlocks = separateAfterExpansion(expanded);
-    free(expanded);
-    //printf("after seperation \n");
+    separateAfterExpansion(expanded, sBlocks);
 
-
-    //go through all S blocks and run substitution 
     char** cBlocks = (char**) malloc(sizeof(char*) * 8);
     for(int j = 0; j < 8; j++){
-        
-        //printf("subblock %d \n", j);
-        cBlocks[j] = substitutionFunction(sBlocks[j]);
-        free(sBlocks[j]);
-    }
-    //printf("after substitutions \n");
+        cBlocks[j] = malloc(sizeof(char) * 4);
+        substitutionFunction(sBlocks[j], cBlocks[j]);
 
-    char* result = combineAfterSubstitution(cBlocks);
-    //printf("after combine \n");
+    }
+
+    //char* result = malloc(sizeof(char) * 32);
+    combineAfterSubstitution(cBlocks, result);
+
+    // free memory
+    free(expanded);
     for(int i = 0; i < 8; i++){
+        free(sBlocks[i]);
         free(cBlocks[i]);
     }
-    free(cBlocks);
     free(sBlocks);
-    
-    return result;
+    free(cBlocks);
+
 }
 
-// --------------------------
-// XOR Operation Function
-// --------------------------
-char** XOR_Function(char** values, int blocks){
+// -----------------------
+// XOR Function: 
+// Input: Array of 32 bit blocks 
+//        Number of blocks
+// Output: Array of 32 bit blocks (same length as inputed)
+// -----------------------
+
+void XOR_Function(char** values, int numBlocks, char** result){
     
-    // if only one block return
-    if(blocks == 1){
-        return values;
+    //if one block return
+    if(numBlocks == 1){
+        //copy values[0] to results[0]
+        for(int i = 0; i < 32; i++){
+            result[0][i] = values[0][i]; 
+        }
+        return;
     }
 
-    char** result = (char**) malloc(sizeof(char*) * blocks);
-
-    for(int i = 0; i < blocks; i++){
-        result[i] = malloc(sizeof(char) * 33);
+    for(int i = 0; i < numBlocks; i++){
+        //fill with 0s 
         for(int fill = 0; fill < 32; fill++){
             result[i][fill] = '0';
         }
 
-        for(int j = 0; j < blocks; j++){
-            if( i != j ){
+        //perform XOR
+        for(int j = 0; j < numBlocks; j++){
+            if(i != j){
                 for(int k = 0; k < 32; k++){
-                    // Do xor
-                    //result[i][k] = result[i][k] ^ (values[j][k]);
                     if(result[i][k] == values[j][k]){
                         result[i][k] = '0';
                     } else {
                         result[i][k] = '1';
                     }
-                    
                 }
             }
-            
         }
     }
-
-    //free
-    //for(int i = 0; i < blocks; i++){
-    //    free(values[i]);
-    //}
-    //free(values);
-
-
-    return result;
+    
 }
 
-// --------------------------
-// Final XOR
-// --------------------------
-char* final_XOR_Function(char** values, int blocks){
 
-    if( blocks == 1 ){
-        return values[0];
+// ----------------------------
+// final_XOR_function
+// Inputs: Array of 32 Bit blocks
+//         Number of blocks
+// Outputs: 32 bit final output
+// ----------------------------
+void final_XOR_Function(char** values, int numBlocks, char* result){
+    
+    //if one block return
+    if(numBlocks == 1){
+        //copy values[0] to results
+        for(int i = 0; i < 32; i++){
+            result[i] = values[0][i]; 
+        }
+        return;
     }
 
-    char* result =  malloc(sizeof(char) * 32);
+    //fill result with 0s
     for(int i = 0; i < 32; i++){
         result[i] = '0';
     }
 
-
-    for(int i = 0; i < blocks; i++){
+    for(int i = 0; i < numBlocks; i++){
         for(int j = 0; j < 32; j++){
             // do xor
             //result[j] = result[j] ^ values[i][j];
@@ -290,144 +310,133 @@ char* final_XOR_Function(char** values, int blocks){
         }
     }
 
-    return result;
+
 }
 
-// --------------------------
-// MTUHash Function
-// --------------------------
 
-char* MTUHash(char** blocks, int numBlocks){
+// -------------------------------------
+// MTU Hash 
+// Inputs: Array of 32 bit blocks
+//         Number of blocks
+// Outputs: 32 bit result
+// -------------------------------------
+void MTUHash(char** blocks, int numBlocks, char* result){
 
-
-    //do 16 rounds
-    for(int rounds = 0; rounds < 15; rounds++){
-        //printf("round %d \n", rounds);
-        //do E-S on all blocks
-        for(int i = 0; i < numBlocks; i++){
-            //printf("Block %d \n", i);
-            blocks[i] = ES_Operation(blocks[i]);
-            
-        }
-        //printf("Before XOR \n");
-        //printBlocks(blocks, numBlocks);
-        blocks = XOR_Function(blocks, numBlocks);
-        //printf("After XOR \n");
-        //printBlocks(blocks, numBlocks);
-
-    }
-
-    //final round
+    //allocate memory of copied blocks
+    char** modBlocks = (char**) malloc(sizeof(char*) * numBlocks);
     for(int i = 0; i < numBlocks; i++){
-        blocks[i] = ES_Operation(blocks[i]);
+        modBlocks[i] = malloc(sizeof(char)* 32);
+        for(int j = 0; j < 32; j++){
+            modBlocks[i][j] = blocks[i][j];
+        }
+    }
+    //perform 15 normal rounds
+    for(int rounds = 0; rounds < 15; rounds++){
+        for(int i = 0; i < numBlocks; i++){
+            ES_Operation(modBlocks[i], modBlocks[i]);
+        }
+        if(debug == 1){
+            printf("round: %d\n", rounds);
+            printf("Before XOR\n");
+            printBlocks(modBlocks, numBlocks);
+        }
+        
+
+        XOR_Function(modBlocks, numBlocks, modBlocks);
+
+        if(debug == 1){
+            printf("After XOR\n");
+            printBlocks(modBlocks, numBlocks);
+        }
+        
+
+        //check for 1st iteration and output round one hash
+
     }
 
-    //printf("Before Final XOR \n");
-    //printBlocks(blocks, numBlocks);
-    char* result = final_XOR_Function(blocks, numBlocks);
-    //printf("After Final XOR \n");
-    //printBlocks(&result, 1);
-    return result;
+    for(int i = 0; i < numBlocks; i++){
+        ES_Operation(modBlocks[i], modBlocks[i]);
+    }
+
+    if(debug == 1){
+        printf("Before Final XOR\n");
+        printBlocks(modBlocks, numBlocks);
+    }
+    
+    final_XOR_Function(modBlocks, numBlocks, result);
+
+    //free memory
+    for(int i = 0; i < numBlocks; i++){
+        free(modBlocks[i]);
+    }
+    free(modBlocks);
+
 }
 
-
-// --------------------------
-// Main function
-// --------------------------
 int main(){
 
-    //get input
-    //printf("hello world \n");
+    
     int numBlocks = 0;  
     char* fileName = "Hashin(32 bit).txt";
-    //char** blocks = getInputFile(fileName, &numBlocks);
-
-    //printf("Number of blocks: %d \n", numBlocks);
-    //printBlocks(blocks, numBlocks);
-
-    //char* result = MTUHash(blocks, numBlocks);
+    char** blocks = getInputFile(fileName, &numBlocks);
     
 
+    if(debug == 2){
+        printf("Print blocks \n");
+        printBlocks(blocks, numBlocks);
+        printf("--\nTest Sub\n--\n");
+        test_Sub();    
+        printf("--\nTest Expand\n--\n");
+        test_expansion();
+        printf("--\nTest Separate\n--\n");
+        test_separate();
+        printf("--\nTest ES\n--\n");
+        test_ES_operation_function();
+    }
 
-   // printf("result: ");
-    //for(int i = 0; i < 32; i++){
-    //    printf("%c", result[i]);
-    //}
-    //printf("\n");
 
-    //test_Sub();    
-    //test_expansion();
-    //test_separate();
-    //test_ES_operation();
-    //test_ES_operation_function();
-    //createOutputFile("Hashout_TEST1.txt", result);
+    char* result = malloc(sizeof(char) * 32);
+    MTUHash(blocks, numBlocks, result);
 
-    //for(int i = 0; i < numBlocks; i++){
-    //    free(blocks[i]);
-    //}
-    //free(blocks);
+    createOutputFile("Hashout_TEST1.txt", result);
+
+    if(debug == 1){
+        //print final result
+        printf("Final Result: ");
+        for(int i = 0; i < 32; i++){
+            printf("%c", result[i]);
+        }
+        printf("\n");
+    }
 
     AECalculator();
 
-    //exit
-    return 0;
+
+    for(int i = 0; i < numBlocks; i++){
+        free(blocks[i]);
+    }
+    free(blocks);
+    free(result);
 
 }
 
-
-// ----------------------
-// debug functions
-// ----------------------
+// Debug functions
 
 void printBlocks(char** blocks, int numBlocks){
-    
     for(int i = 0; i < numBlocks; i++){
         printf("Block %d: ", i);
         for(int j = 0; j < 32; j++){
             printf("%c", blocks[i][j]);
         }
         printf("\n");
-    }       
+    }   
 }
-
-
-
-
-
-void test_expansion(){
-    char input[32] = "10000100001000010000100001000011";
-
-    char* result = expansionFunction(input);
-     printf("Expanstion expected: 110000001000000100000010100001010000001000000111\n");
-    printf("Actual: ");
-    for(int i = 0; i < 48; i++){
-        printf("%c", result[i]);
-    }
-    printf("\n");
-
-}
-
-void test_separate(){
-    char input[48] = "110000001000000100000010100001010000001000000111";
-    printf("110000 001000 000100 000010 100001 010000 001000 000111\n");
-    char** s_blocks = separateAfterExpansion(input);
-
-    for(int i = 0; i < 8; i++){
-        printf("Block 1: ");
-        for(int j = 0; j < 6; j++){
-            printf("%c", s_blocks[i][j]);
-        }
-        printf("\n");
-    }
-
-}
-
 
 void test_Sub(){
-    
     char input[6] = {'1','0','1','0','1','0'};
-
-    char* result = substitutionFunction(input);
+    
+    char* result = malloc(sizeof(char) * 4);
+    substitutionFunction(input, result);
 
     printf("Substitution expected: 0110\n");
     printf("Actual: ");
@@ -436,15 +445,34 @@ void test_Sub(){
     }
     printf("\n");
 
+    free(result);
 }
 
+void test_expansion(){
+    char input[32] = "10000100001000010000100001000011";
 
-void test_ES_operation(){
+    char* result = malloc(sizeof(char) * 48);
+    expansionFunction(input, result);
+    printf("Expansion expected: 110000001000000100000010100001010000001000000111\n");
+    printf("Expansoin Actual:   ");
+    for(int i = 0; i < 48; i++){
+        printf("%c", result[i]);
+    }
+    printf("\n");
+
+    free(result);
+}
+
+void test_separate(){
     char input[48] = "110000001000000100000010100001010000001000000111";
     printf("110000 001000 000100 000010 100001 010000 001000 000111\n");
     
-    printf("Spliting\n");
-    char** s_blocks = separateAfterExpansion(input);
+    char** s_blocks = (char**) malloc(sizeof(char*) * 8);
+    for(int i = 0; i < 8; i++){
+        s_blocks[i] = malloc(sizeof(char) * 6);
+    }
+
+    separateAfterExpansion(input, s_blocks);
 
     for(int i = 0; i < 8; i++){
         printf("Block 1: ");
@@ -454,36 +482,18 @@ void test_ES_operation(){
         printf("\n");
     }
 
-    printf("Substitution\n");
-    for(int j = 0; j < 8; j++){
-        //printf("subblock %d \n", j);
-        s_blocks[j] = substitutionFunction(s_blocks[j]);
-    }
-
+    //free memory
     for(int i = 0; i < 8; i++){
-        printf("sBlock 1: ");
-        for(int j = 0; j < 4; j++){
-            printf("%c", s_blocks[i][j]);
-        }
-        printf("\n");
+        free(s_blocks[i]);
     }
-
-    printf("Combine\n");
-    char* combined = combineAfterSubstitution(s_blocks);
-    printf("Expected: 11110010110101001111001100100100\n");
-    printf("Actual:   ");
-    for(int i = 0; i < 32; i++){
-        printf("%c", combined[i]);
-    }
-    printf("\n");
-
+    free(s_blocks);
 }
-
 
 void test_ES_operation_function(){
     char input[48] = "10000100001000010000100001000011";
 
-    char* result = ES_Operation(input);
+    char* result = malloc(sizeof(char) * 32);
+    ES_Operation(input, result);
 
     printf("Expected: 11110010110101001111001100100100\n");
     printf("Actual:   ");
@@ -491,4 +501,6 @@ void test_ES_operation_function(){
         printf("%c", result[i]);
     }
     printf("\n");
+
+    free(result);
 }

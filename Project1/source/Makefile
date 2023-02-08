@@ -11,4 +11,4 @@ AECalculator.o: AECalculator.c AECalculator.h MTUHash.h
 			gcc -pedantic -Wall -Wextra -O1 AECalculator.c -o AECalculator ${LDFLAGS}
 
 clean: 
-			rm -f MTUHash AECalculator
+			rm -f MTUHash AECalculator NewMTUHash
