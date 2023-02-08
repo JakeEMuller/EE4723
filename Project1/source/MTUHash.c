@@ -217,15 +217,9 @@ char* ES_Operation(char* block){
     return result;
 }
 
-// -------------------
-// Character XOR
-// -------------------
-
-
 // --------------------------
 // XOR Operation Function
 // --------------------------
-/// TODO: THIS IS JUST WRONG
 char** XOR_Function(char** values, int blocks){
     
     // if only one block return
@@ -271,7 +265,6 @@ char** XOR_Function(char** values, int blocks){
 // --------------------------
 // Final XOR
 // --------------------------
-/// TODO: THIS IS JUST WRONG
 char* final_XOR_Function(char** values, int blocks){
 
     if( blocks == 1 ){
