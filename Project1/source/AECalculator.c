@@ -1,5 +1,6 @@
+#include "MTUHashLib.h"
 #include "AECalculator.h"
-#include "MTUHash.h"
+
 
 double compareOutputs(char* baseLineResult, char* result){
     int count = 0;
@@ -19,11 +20,11 @@ double compareOutputs(char* baseLineResult, char* result){
 }
 
 
-void AECalculator(){
+void AECalculator(char* inputFileName ){
 
     //printf("Start AE Cacl\n");
 
-    char* fileName = "Hashin(32 bit).txt";
+    char* fileName = inputFileName;
     char* fileOut = "ARF.txt";
     FILE* fp; 
 
@@ -99,4 +100,18 @@ void AECalculator(){
     fclose(fp);
 
     return;
+}
+
+
+int main( int argc, char *argv[] ){
+    if(argc != 2){
+        printf("Please input one argment: ./AECalculator <InputFile.txt> \n");
+        exit(1);
+    }
+
+    char* fileName = argv[1];
+
+    AECalculator(fileName);
+
+
 }

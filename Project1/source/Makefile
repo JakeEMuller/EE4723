@@ -2,13 +2,13 @@ CC = gcc
 CFLAGS = -pedantic -Wall -Wextra -O1
 LDFLAGS = -lm
 
-default: clean MTUHash.o 
+default: clean MTUHash.o AECalculator.o
 
-MTUHash.o: MTUHash.c MTUHash.h
-			gcc -pedantic -Wall -Wextra -O1 MTUHash.c AECalculator.c -o MTUHash ${LDFLAGS}
+MTUHash.o: MTUHash.c MTUHashLib.h
+			gcc -pedantic -Wall -Wextra -O1 MTUHash.c MTUHashLib.c -o MTUHash ${LDFLAGS}
 
-AECalculator.o: AECalculator.c AECalculator.h MTUHash.h
-			gcc -pedantic -Wall -Wextra -O1 AECalculator.c -o AECalculator ${LDFLAGS}
+AECalculator.o: AECalculator.c AECalculator.h MTUHashLib.h
+			gcc -pedantic -Wall -Wextra -O1 AECalculator.c MTUHashLib.c -o AECalculator ${LDFLAGS}
 
 clean: 
-			rm -f MTUHash AECalculator NewMTUHash
+			rm -f MTUHash AECalculator

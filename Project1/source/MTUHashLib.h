@@ -5,8 +5,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-//#include <iostream>
 #include <stdint.h>
+
+int debug;
 
 char** getInputFile(char* fileName, int* NumBlocks);
 
