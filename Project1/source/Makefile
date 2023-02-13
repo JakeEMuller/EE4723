@@ -1,14 +1,14 @@
-CC = g++
+CC = gcc
 CFLAGS = -pedantic -Wall -Wextra -O1
 LDFLAGS = -lm
 
 default: clean MTUHash.o AECalculator.o
 
-MTUHash.o: MTUHash.cpp MTUHash.h
-			g++ -pedantic -Wall -Wextra -O1 -c MTUHash.cpp -o MTUHash ${LDFLAGS}
+MTUHash.o: MTUHash.c MTUHashLib.h
+			gcc -pedantic -Wall -Wextra -O1 MTUHash.c MTUHashLib.c -o MTUHash ${LDFLAGS}
 
-AECalculator.o: AECalculator.cpp
-			g++ -pedantic -Wall -Wextra -O1 -c AECalculator.cpp -o AECalculator ${LDFLAGS}
+AECalculator.o: AECalculator.c AECalculator.h MTUHashLib.h
+			gcc -pedantic -Wall -Wextra -O1 AECalculator.c MTUHashLib.c -o AECalculator ${LDFLAGS}
 
 clean: 
 			rm -f MTUHash AECalculator
